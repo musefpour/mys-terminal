@@ -14,3 +14,4 @@ release
 .npm/
 .cache/
 reports/
+win-unpacked
