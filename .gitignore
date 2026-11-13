@@ -1,0 +1,16 @@
+node_modules
+out
+dist
+dist-types
+release
+.cursor
+.DS_Store
+*.log
+.vite
+*.local
+.env
+.env.*
+!.env.example
+.npm/
+.cache/
+reports/

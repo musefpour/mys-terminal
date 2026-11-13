@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VanDyke version="3.0">
+  <key name="Sessions">
+    <key name="Lab">
+      <key name="db &amp; cache">
+        <string name="Protocol Name">SSH2</string>
+        <string name="Hostname">db.lab.local</string>
+        <string name="Username">postgres</string>
+        <dword name="[SSH2] Port">2222</dword>
+      </key>
+    </key>
+    <key name="Default" />
+  </key>
+</VanDyke>

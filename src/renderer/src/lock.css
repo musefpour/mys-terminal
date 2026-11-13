@@ -1,0 +1,418 @@
+/* Master-password lock screen. Brand colours: accent green (theme), cursor red from the logo. */
+
+@property --lk-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@property --lk-hole { syntax: '<length-percentage>'; inherits: false; initial-value: 0%; }
+
+.lk {
+  --lk-green: var(--accent);
+  --lk-red: #e5383b;
+  --lk-glass: color-mix(in srgb, var(--raise) 62%, transparent);
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 40%, color-mix(in srgb, var(--bg) 70%, #000) 0%, #000 100%);
+  color: var(--text);
+  -webkit-app-region: drag;
+  animation: lk-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+:root[data-mode='day'] .lk { background: radial-gradient(120% 90% at 50% 40%, #f4faf8 0%, #d9e6e2 100%); }
+
+@keyframes lk-in {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to { opacity: 1; }
+}
+
+/* ── background layers ── */
+.lk-canvas { position: absolute; inset: 0; pointer-events: none; }
+.lk-aurora { position: absolute; inset: -20%; pointer-events: none; filter: blur(70px); opacity: 0.55; }
+.lk-aurora i {
+  position: absolute;
+  width: 46vmax;
+  height: 46vmax;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+.lk-aurora i:nth-child(1) { background: color-mix(in srgb, var(--lk-green) 60%, transparent); left: 10%; top: 15%; animation: lk-drift-a 18s ease-in-out infinite alternate; }
+.lk-aurora i:nth-child(2) { background: color-mix(in srgb, #1f6feb 45%, transparent); right: 5%; top: 30%; animation: lk-drift-b 22s ease-in-out infinite alternate; }
+.lk-aurora i:nth-child(3) { background: color-mix(in srgb, var(--lk-red) 30%, transparent); left: 35%; bottom: 0; width: 34vmax; height: 34vmax; animation: lk-drift-c 26s ease-in-out infinite alternate; }
+@keyframes lk-drift-a { to { transform: translate(18vw, 12vh) scale(1.25); } }
+@keyframes lk-drift-b { to { transform: translate(-22vw, -10vh) scale(0.85); } }
+@keyframes lk-drift-c { to { transform: translate(-12vw, -18vh) scale(1.3); } }
+
+/* Perspective grid floor sliding toward the viewer. */
+.lk-grid {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: -10%;
+  height: 55%;
+  pointer-events: none;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--lk-green) 30%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--lk-green) 30%, transparent) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: top center;
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 45%, #000 100%);
+  opacity: 0.35;
+  animation: lk-grid 3.2s linear infinite;
+}
+@keyframes lk-grid { to { background-position: 0 64px, 0 0; } }
+.lk-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(70% 60% at 50% 45%, transparent 40%, rgba(0, 0, 0, 0.65) 100%); }
+:root[data-mode='day'] .lk-vignette { background: radial-gradient(70% 60% at 50% 45%, transparent 50%, rgba(0, 0, 0, 0.12) 100%); }
+
+/* ── clock ── */
+.lk-clock {
+  position: absolute;
+  top: max(48px, 7vh);
+  inset-inline: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  animation: lk-rise 0.9s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.lk-clock time {
+  display: flex;
+  font-size: clamp(34px, 6vw, 64px);
+  font-weight: 650;
+  line-height: 1.1;
+  direction: ltr;
+  background: linear-gradient(180deg, var(--text) 30%, color-mix(in srgb, var(--lk-green) 70%, var(--text)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 40px color-mix(in srgb, var(--lk-green) 35%, transparent);
+}
+.lk-clock time span { display: inline-block; text-align: center; background: inherit; -webkit-background-clip: text; background-clip: text; }
+.lk-clock .lk-d { width: 0.62em; }
+.lk-clock .lk-sep { width: 0.34em; opacity: 0.7; animation: lk-blink 2s steps(1, end) infinite; }
+.lk-clock > span { font-size: 14px; color: var(--muted); letter-spacing: 0.02em; }
+@media (max-height: 640px) { .lk-clock { display: none; } }
+
+/* ── card ── */
+.lk-card {
+  position: relative;
+  -webkit-app-region: no-drag;
+  width: min(380px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 30px 28px 26px;
+  margin-top: 70px;
+  border-radius: 22px;
+  background: var(--lk-glass);
+  border: 1px solid color-mix(in srgb, var(--lk-green) 22%, var(--line));
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 0 60px color-mix(in srgb, var(--lk-green) 12%, transparent);
+  backdrop-filter: blur(22px) saturate(1.3);
+  animation: lk-rise 0.9s 0.05s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes lk-rise {
+  from { opacity: 0; transform: translateY(28px) scale(0.96); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.lk-miss-0 { animation: lk-shake-a 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+.lk-miss-1 { animation: lk-shake-b 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+@keyframes lk-shake-a {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(5px); }
+  30%, 50%, 70% { transform: translateX(-10px); }
+  40%, 60% { transform: translateX(10px); }
+}
+@keyframes lk-shake-b {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(5px); }
+  30%, 50%, 70% { transform: translateX(-10px); }
+  40%, 60% { transform: translateX(10px); }
+}
+
+/* ── emblem: logo, halo, rings, orbits ── */
+.lk-emblem {
+  position: absolute;
+  top: -78px;
+  width: 156px;
+  height: 156px;
+  display: grid;
+  place-items: center;
+  animation: lk-drop 1s cubic-bezier(0.2, 1.4, 0.4, 1) both, lk-float 6s 1s ease-in-out infinite;
+}
+@keyframes lk-drop {
+  from { opacity: 0; transform: translateY(-40px) scale(0.6) rotate(-8deg); filter: blur(10px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes lk-float { 50% { transform: translateY(-6px); } }
+
+.lk-halo {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--lk-green) 55%, transparent) 0%, transparent 68%);
+  animation: lk-pulse 2.6s ease-in-out infinite;
+}
+@keyframes lk-pulse {
+  0%, 100% { transform: scale(0.9); opacity: 0.55; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+.lk-ring {
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  padding: 2px;
+  background: conic-gradient(from var(--lk-angle), transparent 0deg, var(--lk-green) 70deg, transparent 140deg, transparent 200deg, var(--lk-red) 250deg, transparent 300deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--lk-green) 70%, transparent));
+  animation: lk-spin 3.2s linear infinite;
+}
+@keyframes lk-spin { to { --lk-angle: 360deg; } }
+
+.lk-orbits { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.lk-orbit { fill: none; stroke: color-mix(in srgb, var(--lk-green) 40%, transparent); stroke-width: 1; stroke-dasharray: 3 7; }
+.lk-orbit.a { animation: lk-orbit-draw 1.6s ease-out both, lk-rotate 26s linear infinite; transform-origin: 100px 100px; }
+.lk-orbit.b { stroke-dasharray: 1 5; animation: lk-orbit-draw 1.6s 0.2s ease-out both, lk-rotate 18s linear infinite reverse; transform-origin: 100px 100px; }
+@keyframes lk-orbit-draw { from { opacity: 0; stroke-dashoffset: 120; } to { opacity: 1; stroke-dashoffset: 0; } }
+@keyframes lk-rotate { to { transform: rotate(360deg); } }
+.lk-sat { transform-origin: 100px 100px; }
+.lk-sat circle { filter: drop-shadow(0 0 4px currentColor); }
+.lk-sat.a { color: var(--lk-green); fill: var(--lk-green); animation: lk-rotate 5s linear infinite; }
+.lk-sat.b { color: var(--lk-red); fill: var(--lk-red); animation: lk-rotate 7.5s linear infinite reverse; }
+
+.lk-logo {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px color-mix(in srgb, var(--lk-green) 30%, transparent);
+}
+.lk-logo .brand-logo { display: block; width: 100%; height: 100%; }
+.lk-scan {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--lk-green) 45%, transparent) 48%, rgba(255, 255, 255, 0.6) 50%, transparent 52%);
+  mix-blend-mode: screen;
+  transform: translateY(-100%);
+  animation: lk-scan 3.6s 1.2s ease-in-out infinite;
+}
+@keyframes lk-scan {
+  0% { transform: translateY(-100%); }
+  45%, 100% { transform: translateY(100%); }
+}
+
+/* Wrong password: the logo glitches red. */
+.lk-glitch-0 .lk-logo, .lk-glitch-1 .lk-logo { animation: lk-glitch 0.55s steps(2, end) both; }
+.lk-glitch-1 .lk-logo { animation-name: lk-glitch-b; }
+.lk-glitch-0 .lk-ring, .lk-glitch-1 .lk-ring { background: conic-gradient(from var(--lk-angle), transparent, var(--lk-red) 90deg, transparent 180deg, var(--lk-red) 270deg, transparent); }
+@keyframes lk-glitch {
+  0% { transform: translate(0); filter: none; }
+  20% { transform: translate(-4px, 2px); filter: drop-shadow(4px 0 0 var(--lk-red)) drop-shadow(-4px 0 0 #2bd9ff) hue-rotate(-40deg); }
+  40% { transform: translate(4px, -2px) skewX(6deg); filter: drop-shadow(-5px 0 0 var(--lk-red)) drop-shadow(5px 0 0 #2bd9ff); }
+  60% { transform: translate(-2px, 1px); filter: saturate(3) drop-shadow(3px 0 0 var(--lk-red)); }
+  100% { transform: none; filter: none; }
+}
+@keyframes lk-glitch-b {
+  0% { transform: translate(0); filter: none; }
+  20% { transform: translate(-4px, 2px); filter: drop-shadow(4px 0 0 var(--lk-red)) drop-shadow(-4px 0 0 #2bd9ff) hue-rotate(-40deg); }
+  40% { transform: translate(4px, -2px) skewX(6deg); filter: drop-shadow(-5px 0 0 var(--lk-red)) drop-shadow(5px 0 0 #2bd9ff); }
+  60% { transform: translate(-2px, 1px); filter: saturate(3) drop-shadow(3px 0 0 var(--lk-red)); }
+  100% { transform: none; filter: none; }
+}
+
+/* Small padlock badge on the emblem; its shackle lifts when the lock opens. */
+.lk-padlock {
+  position: absolute;
+  bottom: 22px;
+  inset-inline-end: 22px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--raise) 85%, #000);
+  border: 1px solid color-mix(in srgb, var(--lk-green) 45%, var(--line));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 14px color-mix(in srgb, var(--lk-green) 40%, transparent);
+  color: var(--lk-green);
+  animation: lk-pop 0.6s 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes lk-pop { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: none; } }
+.lk-padlock svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.lk-padlock .shackle { transition: transform 0.45s cubic-bezier(0.2, 1.6, 0.4, 1); transform-origin: 16px 11px; }
+.lk-padlock.open { animation: lk-unlock-badge 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.lk-padlock.open .shackle { transform: translateY(-3px) rotate(28deg); }
+@keyframes lk-unlock-badge {
+  30% { transform: scale(1.35); box-shadow: 0 0 40px var(--lk-green); }
+  100% { transform: scale(1.1); }
+}
+
+/* ── texts ── */
+.lk-title {
+  margin: 76px 0 0;
+  font-size: 19px;
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.lk-title span {
+  clip-path: inset(0 100% 0 0);
+  animation: lk-type 1.1s 0.55s steps(24, end) forwards;
+}
+[dir='rtl'] .lk-title span { clip-path: inset(0 0 0 100%); }
+@keyframes lk-type { to { clip-path: inset(0 0 0 0); } }
+.lk-caret {
+  width: 9px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--lk-red);
+  box-shadow: 0 0 10px var(--lk-red);
+  animation: lk-blink 1.05s steps(1, end) infinite;
+}
+@keyframes lk-blink { 50% { opacity: 0; } }
+.lk-hint { margin: -4px 0 6px; font-size: 13px; color: var(--muted); text-align: center; animation: lk-fade 0.8s 1.1s both; }
+@keyframes lk-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ── password field ── */
+.lk-field {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding-inline: 12px 6px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--sink) 80%, transparent);
+  border: 1px solid var(--line);
+  transition: border-color 0.2s, box-shadow 0.25s, transform 0.2s;
+  animation: lk-fade 0.8s 0.9s both;
+  isolation: isolate;
+}
+/* Animated gradient border while focused. */
+.lk-field::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from var(--lk-angle), var(--lk-green), #2bd9ff, var(--lk-red), var(--lk-green));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.25s;
+  animation: lk-spin 2.4s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+.lk-field:focus-within { border-color: transparent; box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-green) 16%, transparent), 0 10px 30px color-mix(in srgb, var(--lk-green) 14%, transparent); transform: translateY(-1px); }
+.lk-field:focus-within::before { opacity: 1; }
+.lk-field.bad { border-color: var(--lk-red); box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-red) 18%, transparent); }
+.lk-field.bad::before { background: conic-gradient(from var(--lk-angle), var(--lk-red), transparent, var(--lk-red)); }
+.lk-field-ico { width: 20px; height: 20px; color: var(--lk-green); flex: none; display: grid; place-items: center; }
+.lk-field-ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.lk-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  color: var(--text);
+}
+.lk-field input::placeholder { letter-spacing: normal; color: var(--muted); }
+.lk-eye { width: 36px; height: 36px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); display: grid; place-items: center; padding: 0; flex: none; }
+.lk-eye:hover, .lk-eye[aria-pressed='true'] { color: var(--text); background: color-mix(in srgb, var(--text) 8%, transparent); }
+
+/* One light per typed character. */
+.lk-keys { display: flex; gap: 5px; height: 6px; direction: ltr; animation: lk-fade 0.8s 1s both; }
+.lk-keys i { width: 10px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--text) 12%, transparent); transition: background 0.2s, box-shadow 0.2s; }
+.lk-keys i.on { background: var(--lk-green); box-shadow: 0 0 8px var(--lk-green); animation: lk-key 0.35s cubic-bezier(0.2, 1.8, 0.4, 1); }
+@keyframes lk-key { from { transform: scaleY(3) scaleX(1.4); } to { transform: none; } }
+
+.lk-status { min-height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; text-align: center; }
+.lk-error { display: inline-flex; align-items: center; gap: 8px; color: var(--lk-red); animation: lk-fade 0.3s both; }
+.lk-caps { color: var(--warn); animation: lk-fade 0.3s both; }
+.lk-wait { width: 18px; height: 18px; transform: rotate(-90deg); flex: none; }
+.lk-wait circle { fill: none; stroke: color-mix(in srgb, var(--lk-red) 25%, transparent); stroke-width: 2.4; }
+.lk-wait .left { stroke: var(--lk-red); stroke-dasharray: 50.3; transition: stroke-dashoffset 1s linear; }
+
+/* ── unlock button ── */
+.lk-unlock {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--accent-ink);
+  background: linear-gradient(110deg, var(--lk-green), color-mix(in srgb, var(--lk-green) 60%, #2bd9ff), var(--lk-green));
+  background-size: 200% 100%;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--lk-green) 35%, transparent), 0 1px 0 rgba(255, 255, 255, 0.25) inset;
+  transition: transform 0.15s, box-shadow 0.25s, filter 0.2s, opacity 0.2s;
+  animation: lk-fade 0.8s 1.15s both, lk-flow 4s linear infinite;
+}
+@keyframes lk-flow { to { background-position: -200% 0; } }
+.lk-unlock:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 18px 40px color-mix(in srgb, var(--lk-green) 50%, transparent); }
+.lk-unlock:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+.lk-unlock:disabled { opacity: 0.45; cursor: default; filter: saturate(0.6); box-shadow: none; }
+.lk-unlock-shine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  left: -50%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-20deg);
+  animation: lk-shine 2.8s 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.lk-unlock:disabled .lk-unlock-shine { display: none; }
+@keyframes lk-shine { 0% { left: -50%; } 55%, 100% { left: 130%; } }
+.lk-unlock-ico { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s; }
+.lk-unlock:hover:not(:disabled) .lk-unlock-ico { transform: rotate(-8deg) scale(1.1); }
+.lk-spin { width: 18px; height: 18px; border-radius: 50%; border: 2.4px solid color-mix(in srgb, var(--accent-ink) 30%, transparent); border-top-color: var(--accent-ink); animation: lk-rotate 0.7s linear infinite; }
+
+/* ── unlocking: everything bursts open and a hole tears through the middle ── */
+.lk-opening {
+  animation: lk-tear 1.1s 0.25s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+  mask-image: radial-gradient(circle at 50% 46%, transparent var(--lk-hole), #000 calc(var(--lk-hole) + 6%));
+  pointer-events: none;
+}
+@keyframes lk-tear { to { --lk-hole: 150%; } }
+.lk-opening .lk-card { animation: lk-card-out 0.8s cubic-bezier(0.6, 0, 0.4, 1) forwards; }
+@keyframes lk-card-out {
+  30% { transform: scale(1.04); }
+  100% { transform: scale(0.7) translateY(30px); opacity: 0; filter: blur(12px); }
+}
+.lk-opening .lk-ring { animation-duration: 0.5s; filter: drop-shadow(0 0 22px var(--lk-green)); }
+.lk-opening .lk-halo { animation: lk-flash 0.6s ease-out forwards; }
+@keyframes lk-flash { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3.2); opacity: 0; } }
+.lk-opening .lk-clock { animation: lk-clock-out 0.6s ease-in forwards; }
+@keyframes lk-clock-out { to { opacity: 0; transform: translateY(-30px); filter: blur(8px); } }
+.lk-opening .lk-grid { animation: lk-grid 0.6s linear infinite; }
+
+/* Respect "reduce motion": keep the look, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .lk, .lk *, .lk *::before, .lk *::after { animation: none !important; transition: none !important; }
+  .lk-title span { clip-path: none; }
+  .lk-opening { mask-image: none; opacity: 0; }
+}

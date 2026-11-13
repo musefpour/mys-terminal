@@ -1,0 +1,169 @@
+{
+  "name": "mys-terminal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mys Terminal Management — workstation for SSH, SFTP, VNC, tunnels, and local shells",
+  "author": "Mys",
+  "productName": "Mys Terminal Management",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.web.json --noEmit",
+    "rebuild": "electron-rebuild -f -w node-pty",
+    "pack": "npm run typecheck && npm run build && electron-builder --dir",
+    "dist": "npm run typecheck && npm run build && electron-builder",
+    "dist:mac": "npm run typecheck && npm run build && electron-builder --mac",
+    "test": "vitest run",
+    "dist:win": "npm run typecheck && npm run build && electron-builder --win",
+    "dist:linux": "npm run typecheck && npm run build && electron-builder --linux",
+    "postinstall": "patch-package && node -e \"const fs=require('fs'),d='node_modules/node-pty/prebuilds';for(const a of fs.existsSync(d)?fs.readdirSync(d):[]){try{fs.chmodSync(d+'/'+a+'/spawn-helper',0o755)}catch{}}\""
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "build": {
+    "appId": "com.mys.terminal.management",
+    "productName": "Mys Terminal Management",
+    "copyright": "Copyright © Mys",
+    "directories": {
+      "output": "release",
+      "buildResources": "resources"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/icon-dark.png",
+        "to": "icon.png"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "resources/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "resources/entitlements.mac.plist",
+      "entitlementsInherit": "resources/entitlements.mac.plist",
+      "artifactName": "Mys-Terminal-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "Mys Terminal Management ${version}"
+    },
+    "linux": {
+      "icon": "resources/icon-dark.png",
+      "category": "Development",
+      "maintainer": "Mys",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "Mys-Terminal-${version}-${arch}.${ext}"
+    },
+    "win": {
+      "icon": "resources/icon-dark.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signtoolOptions": {
+        "signingHashAlgorithms": [
+          "sha256"
+        ],
+        "rfc3161TimeStampServer": "http://timestamp.digicert.com"
+      }
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://updates.invalid/mys-terminal"
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Mys-Terminal-Setup-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Mys-Terminal-Portable-${version}-${arch}.${ext}"
+    }
+  },
+  "dependencies": {
+    "@fontsource/vazirmatn": "^5.3.0",
+    "@novnc/novnc": "^1.7.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-search": "^0.16.0",
+    "@xterm/addon-web-links": "^0.12.0",
+    "@xterm/addon-webgl": "^0.19.0",
+    "@xterm/xterm": "^6.0.0",
+    "basic-ftp": "^6.2.1",
+    "electron-updater": "^6.8.11",
+    "flag-icons": "^7.5.0",
+    "node-pty": "^1.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "ssh2": "^1.17.0",
+    "trzsz": "^1.1.6",
+    "ws": "^8.21.3",
+    "zmodem.js": "^0.1.10"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.2.0",
+    "@types/node": "^26.6.2",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@types/ssh2": "^1.15.6",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^4.7.0",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "patch-package": "^8.0.1",
+    "typescript": "^7.0.2",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.7"
+  }
+}

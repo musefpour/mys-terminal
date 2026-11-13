@@ -1,0 +1,27 @@
+# global
+Include conf.d/*.conf
+
+Host bastion
+  HostName bastion.example.com
+  User ops
+  Port 2222
+  IdentityFile ~/.ssh/id_ed25519
+
+Host web-* !web-skip
+  User deploy
+  ForwardAgent yes
+
+Host web-1
+  HostName 10.0.0.11
+  ProxyJump bastion
+  LocalForward 8080 127.0.0.1:80
+  DynamicForward 1080
+
+Host db
+  HostName 10.0.0.20
+  ProxyJump admin@gw.example.com:2200,bastion
+  RemoteForward 9000 localhost:9000
+
+Host *
+  User fallback
+  ServerAliveInterval 30

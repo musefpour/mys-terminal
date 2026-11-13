@@ -1,0 +1,11 @@
+[Bookmarks]
+SubRep=
+ImgNum=42
+prod-web= #109#0%10.1.1.5%22%root%%-1%-1%%%22%%0%0%0%%%-1%0%0%0%%1080%%0%0%1#MobaFont%10%0%0%-1%15%236,236,236%30,30,30%180,180,192%0%-1%0%%xterm%-1%0%_Std_Colors_0_%80%24%0%1%-1%<none>%%0%0%-1#0# #-1
+win-box= #91#4%10.1.1.9%3389%administrator%0%0%-1%0%-1%0%0%0%0%0#MobaFont%10#0# #-1
+
+[Bookmarks_1]
+SubRep=Clients\Acme
+ImgNum=41
+acme-sftp= #140#7%files.acme.com%22%acme%0%0%%#MobaFont%10#0# #-1
+acme-xdmcp= #128#3%x.acme.com%177%%#MobaFont%10#0# #-1
